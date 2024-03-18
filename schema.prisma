@@ -1,0 +1,1986 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum AdVideoTemplateStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum AdVideoStatus {
+  PENDING
+  PROCESSING
+  FINISHED
+  CANCELED
+  FAILED
+}
+
+enum CreativeFormatStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum CreativeThemeStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum CreativeThemeImageExtension {
+  JPEG
+  PNG
+}
+
+enum CreativeThemeFormat {
+  IMAGE
+  VIDEO
+}
+
+enum PaymentPlatform {
+  STRIPE
+  PAYPAL
+}
+
+enum OrderStatus {
+  OPEN
+  PAYMENT_SUCCEEDED
+  PAYMENT_FAILED
+  COMPLETED
+  EXPIRED
+}
+
+enum SiteBlock {
+  MAIN
+  OFFERS
+  ABOUT
+  STEPS
+  BENEFITS
+  QUESTIONS
+  TEAMMATES
+  PHOTOS
+  VIDEOS
+  OTHER
+}
+
+enum AIQueryTemplateStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum BusinessProfileDirection {
+  PRODUCT
+  SERVICE
+}
+
+enum ClientStatus {
+  NEW
+  IN_PROGRESS
+  DONE
+  ARCHIVE
+}
+
+enum MarketingTypes {
+  SOCIAL_MEDIA
+  PERFORMANCE
+  MARKETING_STRATEGY
+  SALES_STRATEGY
+  VIDEO
+  TEXT
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  REDEMPTION
+  PAUSED
+}
+
+enum InternalSubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAUSED
+}
+
+enum PricingPlan {
+  GROWTH
+  PLUS
+  STARTER
+  PRO
+  FREE
+  BUNDLE
+}
+
+enum SubscriptionProvider {
+  SOLIDGATE
+  APPLE
+  GOOGLE
+}
+
+enum SubscriptionProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PaymentAnalyticsProvider {
+  SOLIDGATE
+  APPLE
+  GOOGLE
+}
+
+enum PaymentAnalyticsType {
+  ALERT
+  DISPUTE
+  CHARGEBACK
+  FRAUD
+  REDEMPTION
+  ORDER
+}
+
+enum PaymentAnalyticsStatus {
+  SUCCESS
+  FAILED
+  PENDING
+  CANCELED
+}
+
+enum InstantFormStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum ClientOrigin {
+  SITE_QUICK_FORM
+  INSTANT_FORM
+}
+
+enum CreativeFormatPlatform {
+  LINKEDIN
+  INSTAGRAM
+  FACEBOOK
+  TWITTER
+  GOOGLE
+}
+
+enum CreativeFormatSpecification {
+  AD
+  STORY
+  POST
+}
+
+enum FacebookAdPaymentAccount {
+  INSIDE
+  OUTSIDE
+}
+
+enum statusPipeline {
+  PRE_ORDER
+  AWAITING_PAYMENT
+  PAID
+  DELIVERY
+  COMPLETED
+  CANCELED
+}
+
+enum OrderPaymentMethod {
+  PENDING_SELECTION
+  INVOICE
+  STRIPE
+  PAYPAL
+}
+
+enum OrderPaymentStatus {
+  PENDING_SELECTION
+  INVOICE_SENDED
+  PAYMENT_FAILED
+  PAYMENT_SUCCEEDED
+  COMPLETED
+  EXPIRED
+}
+
+enum RewardStatus {
+  PENDING
+  FAILED
+  REFERRAL
+  WITHDRAW
+}
+
+enum RewardProvider {
+  TREMENDOUS
+}
+
+enum ScraperProvider {
+  APIFY
+}
+
+enum CreativeType {
+  CUSTOM
+  GENERATED
+}
+
+enum EmailProvider {
+  SENDGRID
+}
+
+model User {
+  id                      String       @id @db.Uuid
+  email                   String       @default("") @db.VarChar
+  password                String       @default("") @db.VarChar
+  name                    String       @db.VarChar
+  phone                   String?      @unique @db.VarChar(20)
+  countryCode             String       @default("") @db.VarChar(20)
+  zipCode                 String?      @db.VarChar(20)
+  city                    String?      @db.VarChar(40)
+  state                   String?      @db.VarChar(40)
+  address                 String?      @db.VarChar(80)
+  os                      String       @db.VarChar(20)
+  language                String       @db.VarChar(20)
+  isApproved              Boolean      @default(false) @db.Boolean
+  isSubscriptionActivated Boolean      @default(false) @db.Boolean
+  isNotificationsEnabled  Boolean      @default(true)
+  photo                   String?      @db.VarChar
+  timeZone                String?      @db.VarChar(255)
+  idfa                    String?      @db.VarChar(255)
+  pricingPlan             PricingPlan?
+  walletLimit             Float        @default(1000) @db.DoublePrecision
+  adSetting               Json         @default("{\"leadGeneration\":{\"range\":100}}") @db.Json
+  referrerId              String?      @db.Uuid
+  referrerCode            String?      @unique @db.VarChar(255)
+  rewardBonus             Int          @default(0) @db.Integer
+  isDeleted               Boolean      @default(false) @db.Boolean
+
+  oldEmail                String?      @db.VarChar
+
+  sites              Site[]
+  facebookAds        FacebookAd[]
+  facebookProfiles   FacebookProfile[]
+  facebookTargetings FacebookTargeting[]
+  otps               Otp[]
+  creative           Creative[]
+  adVideos           AdVideo[]
+  businessProfiles   BusinessProfile[]
+  aiChatConversation AIChatConversation?
+  wallet             Wallet?
+  productAttribute     Attribute[]
+  productActionButtons ProductActionButton[]
+  achievements         UserAchievements[]
+  notifications        UserNotification[]
+  notificationsHistory NotificationsHistory[]
+
+  notificationSettings NotificationSettings?
+  pushTokens           PushToken[]
+
+  videoLessons   UserVideoLesson[]
+  articleLessons UserArticleLesson[]
+  quizLessons    UserQuizLesson[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  firstAppLoginAt DateTime?
+
+  aiHubUserPrompts AIHubUserPrompt[]
+
+  subscription   Subscription[]
+  payments       Payment[]
+  AttributeValue AttributeValue[]
+
+  creativeTempImages CreativeTempImage[]
+  userUtmParameter   UserUtmParameter?
+  referrer           User?               @relation("ReferralRelation", fields: [referrerId], references: [id])
+  referrals          User[]              @relation("ReferralRelation")
+  rewards            Reward[]
+  adminLogs          AdminLog[]
+
+  userLimits         UserLimits?
+
+  @@map("users")
+}
+
+model Site {
+  id                       String  @id @db.Uuid
+  type                     String  @db.VarChar
+  structure                String? @db.VarChar
+  theme                    String? @db.VarChar
+  template                 String? @db.VarChar(255)
+  url                      String  @db.VarChar
+  subdomain                String  @db.VarChar
+  bucket                   String? @db.VarChar
+  language                 String  @default("en") @db.VarChar(20)
+  paymentPlatform          String? @db.VarChar
+  stripeConnectedAccountId String? @db.VarChar(255)
+  paypalConnectedAccountId String? @db.VarChar(255)
+  isPaymentsEnabled        Boolean @default(false)
+  isInvoiceEnabled         Boolean @default(true)
+  labelOn                  Boolean @default(true)
+  isActive                 Boolean @default(true)
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @db.Uuid
+
+  main             Main?
+  about            About?
+  offers           Offer[]
+  products        Product[]
+  portfolios       Portfolio[]
+  benefits         Benefit[]
+  teammates        Teammate[]
+  photos           Photo[]
+  videos           Video[]
+  steps            Step[]
+  questions        Question[]
+  applications     Application[]
+  bonus            Bonus[]
+  clients          Client[]
+  visitor          Visitor[]
+  creative         Creative[]
+  orders           Order[]
+  businessProfile  BusinessProfile?
+  paymentPlatforms PaymentPlatforms[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sites")
+}
+
+model PaymentPlatforms {
+    siteId   String          @db.Uuid
+    name     PaymentPlatform
+
+    externalId  String?       @db.VarChar
+    isEnabled   Boolean       @default(false)
+    isConnected Boolean       @default(false)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt @default(now())
+
+    requirements Json? @db.Json
+
+    site     Site @relation(fields: [siteId], references: [id])
+
+    @@id([siteId, name])
+    @@map("paymentPlatforms")
+}
+
+model Main {
+  id              String  @id @db.Uuid
+  siteId          String  @unique @db.Uuid
+  title           String? @db.VarChar
+  description     String? @db.VarChar
+  backgroundImage String? @db.VarChar
+  specialOffer    String? @db.VarChar
+
+  isTitleActive        Boolean @default(true) @db.Boolean
+  isDescriptionActive  Boolean @default(true) @db.Boolean
+  isSpecialOfferActive Boolean @default(true) @db.Boolean
+  isOffersActive       Boolean @default(true) @db.Boolean
+  isAboutActive        Boolean @default(true) @db.Boolean
+  isBenefitsActive     Boolean @default(true) @db.Boolean
+  isGalleryActive      Boolean @default(true) @db.Boolean
+  isStepsActive        Boolean @default(true) @db.Boolean
+  isQuestionsActive    Boolean @default(true) @db.Boolean
+  isTeammatesActive    Boolean @default(true) @db.Boolean
+
+  offersLabel    String? @db.VarChar(255)
+  aboutLabel     String? @db.VarChar(255)
+  benefitsLabel  String? @db.VarChar(255)
+  galleryLabel   String? @db.VarChar(255)
+  stepsLabel     String? @db.VarChar(255)
+  questionsLabel String? @db.VarChar(255)
+  teammatesLabel String? @db.VarChar(255)
+
+  seoTitle       String? @db.VarChar(255)
+  seoDescription String? @db.VarChar(255)
+  seoKeywords    String? @db.VarChar(255)
+
+  googleTagManager String? @db.VarChar(255)
+  googleAnalytics  String? @db.VarChar(255)
+  metaPixel        String? @db.VarChar(255)
+  tiktokPixel      String? @db.VarChar(255)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  site Site @relation(fields: [siteId], references: [id])
+
+  @@index([siteId])
+  @@index([createdAt])
+  @@map("mains")
+}
+
+model Offer {
+  id             String   @id @db.Uuid
+  siteId         String   @db.Uuid
+  image          String   @db.VarChar
+  title          String   @db.VarChar
+  textbutton     String   @default("") @db.VarChar
+  currencySymbol String   @default("") @db.VarChar
+  description    String   @db.VarChar
+  price          Int      @db.Integer
+  currency       String?  @db.VarChar(3)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  isMigrated     Boolean  @default(false) @db.Boolean
+
+  site  Site    @relation(fields: [siteId], references: [id])
+  Order Order[]
+
+  @@index([siteId])
+  @@map("offers")
+}
+
+model Portfolio {
+  id          String @id @db.Uuid
+  image       String @db.VarChar
+  title       String @db.VarChar
+  description String @db.VarChar
+
+  site   Site   @relation(fields: [siteId], references: [id])
+  siteId String @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("portfolios")
+}
+
+model About {
+  id             String   @id @db.Uuid
+  siteId         String   @unique @db.Uuid
+  logo           String   @db.VarChar
+  name           String   @db.VarChar
+  phone          String   @default("") @db.VarChar
+  countryCode    String   @default("") @db.VarChar
+  phoneCode      String   @default("") @db.VarChar
+  description    String   @db.VarChar
+  email          String   @default("") @db.VarChar
+  workingHours   String   @default("") @db.VarChar
+  whatsup        String?  @db.VarChar
+  facebook       String?  @db.VarChar
+  instagram      String?  @db.VarChar
+  companyaddress String   @default("") @db.VarChar
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  site Site @relation(fields: [siteId], references: [id])
+
+  @@index([siteId])
+  @@map("abouts")
+}
+
+model Office {
+  id           String @id @db.Uuid
+  address      String @db.VarChar
+  phone        String @db.VarChar
+  workingHours String @db.VarChar
+  email        String @db.VarChar
+
+  aboutId String @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("offices")
+}
+
+model Benefit {
+  id        String   @id @db.Uuid
+  siteId    String   @db.Uuid
+  title     String[] @db.VarChar
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  site Site @relation(fields: [siteId], references: [id])
+
+  @@index([siteId])
+  @@map("benefits")
+}
+
+model Teammate {
+  id        String   @id @db.Uuid
+  siteId    String   @db.Uuid
+  photo     String   @db.VarChar
+  name      String   @db.VarChar
+  position  String   @db.VarChar
+  facebook  String   @default("") @db.VarChar
+  instagram String   @default("") @db.VarChar
+  whatsapp  String   @default("") @db.VarChar
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  site Site @relation(fields: [siteId], references: [id])
+
+  @@index([siteId])
+  @@map("teammates")
+}
+
+model Photo {
+  id        String   @id @db.Uuid
+  siteId    String   @db.Uuid
+  url       String[] @db.VarChar
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  site Site @relation(fields: [siteId], references: [id])
+
+  @@index([siteId])
+  @@map("photos")
+}
+
+model Video {
+  id        String   @id @db.Uuid
+  siteId    String   @db.Uuid
+  url       String[] @db.VarChar
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  site Site @relation(fields: [siteId], references: [id])
+
+  @@index([siteId])
+  @@map("videos")
+}
+
+model Step {
+  id        String   @id @db.Uuid
+  siteId    String   @db.Uuid
+  title     String[] @db.VarChar
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  site Site @relation(fields: [siteId], references: [id])
+
+  @@index([siteId])
+  @@map("steps")
+}
+
+model Question {
+  id        String   @id @db.Uuid
+  siteId    String   @db.Uuid
+  question  String   @db.VarChar
+  answer    String   @db.VarChar
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  site Site @relation(fields: [siteId], references: [id])
+
+  @@index([siteId])
+  @@map("questions")
+}
+
+/// Deprecated, moved to Client
+model Bonus {
+  id              String   @id @db.Uuid
+  email           String   @db.VarChar
+  name            String   @db.VarChar
+  phone           String   @db.VarChar
+  status          String   @default("PENDING") @db.VarChar
+  askYourQuestion String   @default("") @db.VarChar
+  notes           String[] @db.VarChar
+  isRead          Boolean  @default(false) @db.Boolean
+
+  site   Site   @relation(fields: [siteId], references: [id])
+  siteId String @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("bonus")
+}
+
+model Application {
+  id    String @id @db.Uuid
+  name  String @db.VarChar
+  email String @db.VarChar
+  phone String @db.VarChar
+
+  site   Site   @relation(fields: [siteId], references: [id])
+  siteId String @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("applications")
+}
+
+model Post {
+  id          String @id @db.Uuid
+  title       String @db.VarChar
+  description String @db.VarChar
+  category    String @db.VarChar
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("posts")
+}
+
+model Otp {
+  id                  String  @id @db.Uuid
+  body                String  @db.VarChar
+  from                String  @db.VarChar
+  to                  String  @db.VarChar
+  accountSid          String  @db.VarChar
+  status              String  @db.VarChar
+  messagingServiceSid String  @db.VarChar
+  sid                 String  @unique @db.VarChar
+  errorMessage        String? @db.VarChar
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("otps")
+}
+
+model Visitor {
+  siteId    String   @db.Uuid
+  date      DateTime @default(now()) @db.Date
+  ip        String   @db.Inet
+  views     Int      @default(0)
+  requests  Int      @default(0)
+  userAgent String?  @db.VarChar(255)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  site Site @relation(fields: [siteId], references: [id])
+
+  @@id([siteId, date, ip])
+  @@index([date])
+  @@map("visitors")
+}
+
+model CreativeFormat {
+  id                   String                      @id @default(uuid()) @db.Uuid
+  name                 String                      @db.VarChar(255)
+  width                Int                         @db.SmallInt
+  height               Int                         @db.SmallInt
+  status               CreativeFormatStatus        @default(INACTIVE)
+  previewImageUrl      String                      @db.VarChar(255)
+  smallPreviewImageUrl String?                     @db.VarChar(255)
+  order                Int                         @default(autoincrement()) @db.SmallInt
+  platform             CreativeFormatPlatform      @default(FACEBOOK)
+  format               CreativeFormatSpecification @default(AD)
+  aiReserved           Boolean                     @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  creativeTheme CreativeTheme[]
+
+  @@index([name])
+  @@index([status])
+  @@index([createdAt])
+  @@map("creativeFormats")
+}
+
+model CreativeTheme {
+  id              String                       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String                       @db.VarChar(255)
+  category        Json?                        @db.Json @default("[]")
+  format          CreativeThemeFormat?
+  bodyUrl         String?                      @db.VarChar
+  body            String?                      @db.Text
+  status          CreativeThemeStatus          @default(INACTIVE)
+  imageExtension  CreativeThemeImageExtension?
+  previewImageUrl String                       @db.VarChar(255)
+  order           Int                          @default(autoincrement()) @db.SmallInt
+  version         Int                          @default(1) @db.SmallInt
+  createdAt       DateTime                     @default(now())
+  updatedAt       DateTime                     @default(now()) @updatedAt
+
+  allocation      Json?                        @db.Json @default("{}")
+
+  creativeFormat   CreativeFormat? @relation(fields: [creativeFormatId], references: [id])
+  creativeFormatId String?         @db.Uuid
+  creativeImages   CreativeImage[]
+
+  aiQueryTemplateName String?          @db.VarChar(255)
+  aiQueryTemplate     AIQueryTemplate? @relation(fields: [aiQueryTemplateName], references: [name])
+  creativeProperties  Json?            @db.Json @default("[]")
+  rate                Float            @default(0) @db.DoublePrecision
+
+  @@index([name])
+  @@index([status])
+  @@index([creativeFormatId])
+  @@index([createdAt])
+  @@map("creativeThemes")
+}
+
+model Creative {
+  id            String           @id @default(uuid()) @db.Uuid
+  siteId        String           @db.Uuid
+  userId        String           @db.Uuid
+  productId     String?          @db.Uuid
+  data          Json             @default("{}") @db.Json
+  isDeleted     Boolean          @default(false) @db.Boolean
+  isAIGenerated Boolean          @default(false) @db.Boolean
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @default(now()) @updatedAt
+  type          CreativeType     @default(CUSTOM)
+  previewUrl    String?
+
+  site           Site            @relation(fields: [siteId], references: [id])
+  user           User            @relation(fields: [userId], references: [id])
+  product        Product?        @relation(fields: [productId], references: [id])
+  creativeImages CreativeImage[]
+
+  @@index([siteId])
+  @@index([userId])
+  @@index([isDeleted])
+  @@index([createdAt])
+  @@map("creatives")
+}
+
+model CreativeImage {
+  id          String   @id @default(uuid()) @db.Uuid
+  width       Int      @db.SmallInt
+  height      Int      @db.SmallInt
+  url         String?  @db.VarChar(255)
+  originUrl   String?  @db.VarChar
+  storagePath String?  @db.VarChar(255)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  creative        Creative       @relation(fields: [creativeId], references: [id])
+  creativeId      String         @db.Uuid
+  creativeTheme   CreativeTheme? @relation(fields: [creativeThemeId], references: [id])
+  creativeThemeId String?        @db.Uuid
+
+  @@index([creativeId])
+  @@map("creativeImages")
+}
+
+model CreativeTempImage {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  url         String?  @db.VarChar(255)
+  originUrl   String?  @db.VarChar
+  storagePath String?  @db.VarChar(255)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("creativeTempImages")
+}
+
+model CreativeAllocation {
+  id          String @id
+  name        String @db.VarChar(100)
+  description String @db.VarChar(255)
+  order       Int    @db.SmallInt
+
+  @@map("creativeAllocations")
+}
+
+model Order {
+  id                       String          @id @default(uuid()) @db.Uuid
+  siteId                   String          @db.Uuid
+  offerId                  String?         @db.Uuid
+  productId                String?         @db.Uuid
+  amount                   Int
+  currency                 String          @db.VarChar(255)
+  status                   OrderStatus     @default(OPEN)
+  externalId               String?         @db.VarChar(255)
+  paymentPlatform          PaymentPlatform @default(STRIPE)
+  paymentPlatformAccountId String          @db.VarChar(255)
+  paymentPlatformResult    Json?           @db.Json
+  customerName             String?         @db.VarChar(255)
+  customerEmail            String?         @db.VarChar(255)
+  error                    String?
+  paidAt                   DateTime?
+  statusPipeline           statusPipeline  @default(PRE_ORDER)
+  createdAt                DateTime        @default(now())
+  updatedAt                DateTime        @default(now()) @updatedAt
+
+  site        Site         @relation(fields: [siteId], references: [id])
+  offer       Offer?       @relation(fields: [offerId], references: [id])
+  product     Product?     @relation(fields: [productId], references: [id], onDelete: SetNull)
+  paymentLogs PaymentLog[]
+
+  @@index([siteId])
+  @@index([offerId])
+  @@index([productId])
+  @@index([externalId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([statusPipeline])
+  @@map("orders")
+}
+
+model PaymentLog {
+  id              String          @id @default(uuid()) @db.Uuid
+  externalId      String          @db.VarChar(255)
+  paymentPlatform PaymentPlatform @default(STRIPE)
+  orderId         String?         @db.Uuid
+  clientId        String?         @db.Uuid
+  type            String?         @db.VarChar(255)
+  data            Json            @default("{}") @db.Json
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @default(now()) @updatedAt
+
+  order Order?   @relation(fields: [orderId], references: [id])
+  client Client? @relation(fields: [clientId], references: [id])
+
+  @@index([externalId])
+  @@index([orderId])
+  @@index([createdAt])
+  @@map("paymentLogs")
+}
+
+model FacebookAd {
+  id                  String                   @id @db.Uuid
+  websiteUrl          String                   @db.VarChar
+  facebookPageId      String                   @default("") @db.VarChar
+  facebookAdAccountId String                   @default("") @db.VarChar
+  facebookCampaignId  String                   @default("") @db.VarChar
+  facebookAdSetId     String                   @default("") @db.VarChar
+  facebookAdId        String                   @unique @db.VarChar
+  imageUrl            String                   @default("") @db.VarChar
+  primaryText         String                   @default("") @db.VarChar
+  headline            String                   @default("") @db.VarChar
+  actionButton        String                   @default("") @db.VarChar
+  budget              Float                    @default(0) @db.DoublePrecision
+  name                String                   @default("") @db.VarChar
+  status              String                   @default("") @db.VarChar
+  endDate             DateTime?
+  effectiveStatus     String                   @default("") @db.VarChar
+  isRepublishedOnce   Boolean                  @default(false) @db.Boolean
+  targetingPlatform   String                   @default("") @db.VarChar
+  targetingPlacements String[]                 @db.VarChar
+  objective           String                   @default("")
+  instantFormId       String?                  @db.Uuid
+  paymentAccount      FacebookAdPaymentAccount @default(INSIDE)
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @db.Uuid
+
+  facebookProfile   FacebookProfile @relation(fields: [facebookProfileId], references: [id])
+  facebookProfileId String          @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([facebookAdId])
+  @@map("facebookAds")
+}
+
+model FacebookProfile {
+  id            String  @id @db.Uuid
+  facebookId    String  @db.VarChar
+  facebookToken String  @db.VarChar
+  facebookName  String  @db.VarChar
+  facebookEmail String? @db.VarChar
+  isUserAccount Boolean @default(true)
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @db.Uuid
+
+  facebookAds        FacebookAd[]
+  facebookTargetings FacebookTargeting[]
+  instantForm        InstantForm[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("facebookProfiles")
+}
+
+model FacebookTargeting {
+  id                    String @id @db.Uuid
+  facebookAdAccountId   String @default("") @db.VarChar
+  targetingDemographics Json   @default("{}") @db.Json
+  targetingLocations    Json   @default("{}") @db.Json
+  targetingInterests    Json   @default("{}") @db.Json
+  name                  String @default("") @db.VarChar
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @db.Uuid
+
+  facebookProfile   FacebookProfile @relation(fields: [facebookProfileId], references: [id])
+  facebookProfileId String          @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("facebookTargetings")
+}
+
+model BusinessProfile {
+  id                 String                    @id @default(uuid()) @db.Uuid
+  userId             String                    @db.Uuid
+  siteId             String?                   @unique @db.Uuid
+  companyName        String?                   @db.VarChar(255)
+  companyAddress     String?                   @db.VarChar(255)
+  companyDescription String?                   @db.VarChar(255)
+  businessArea       String?                   @db.VarChar(255)
+  direction          BusinessProfileDirection?
+  userName           String?                   @db.VarChar(255)
+  userPosition       String?                   @db.VarChar(255)
+  siteDomain         String?                   @db.VarChar(255)
+  email              String?                   @db.VarChar(255)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  imageUrl        String?                  @db.VarChar(255)
+  siteType        String?                  @db.VarChar(150)
+  productsType    String?                  @db.VarChar(150)
+  businessStage   String?                  @db.VarChar(150)
+  goal            String?                  @db.VarChar(255)
+  sitePlatform    String?                  @db.VarChar(255)
+  sellChannels    String?                  @db.VarChar(255)
+
+  launchAdsBefore      Boolean?            @db.Boolean
+  buildCreativesBefore Boolean?            @db.Boolean
+  creativesQuiz        Json?               @db.Json
+  ordersPerMonth       String?             @db.VarChar(50)
+  ordersGoal           String?             @db.VarChar(50)
+  ordersGoalPeriod     String?             @db.VarChar(50)
+
+  averageCheck         Float?              @db.DoublePrecision
+  averageCustomer      Json?               @db.Json
+  interests            Json?               @db.Json
+
+  user User? @relation(fields: [userId], references: [id])
+  site Site? @relation(fields: [siteId], references: [id])
+
+  @@index([userId])
+  @@index([siteId])
+  @@index([createdAt])
+  @@map("businessProfiles")
+}
+
+model AIQueryTemplate {
+  name      String                @id @db.VarChar(255)
+  siteBlock SiteBlock?
+  status    AIQueryTemplateStatus @default(ACTIVE)
+  query     String                @db.Text
+  settings  Json                  @default("{}") @db.Json
+
+  creativeThemes CreativeTheme[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([name])
+  @@index([siteBlock])
+  @@index([status])
+  @@map("aiQueryTemplates")
+}
+
+model Client {
+  id              String              @id @default(uuid()) @db.Uuid
+  siteId          String              @db.Uuid
+  name            String              @db.VarChar
+  email           String              @db.VarChar
+  phone           String              @db.VarChar
+  productName     String?             @db.VarChar
+  productImageUrl String?             @db.VarChar
+  quantity        Int?                @db.Integer
+  paymentMethod   OrderPaymentMethod  @default(PENDING_SELECTION)
+  paymentStatus   OrderPaymentStatus  @default(PENDING_SELECTION)
+  price           Float?              @db.DoublePrecision
+  currency        String?             @db.VarChar(255)
+  currencySymbol  String?             @db.VarChar
+  country         String?             @db.VarChar(255)
+  city            String?             @db.VarChar(255)
+  address         String?             @db.VarChar
+  zipCode         String?             @db.VarChar(255)
+  statusPipeline  statusPipeline      @default(PRE_ORDER)
+  attributes      Json                @default("[]") @db.Json
+  status          ClientStatus        @default(NEW)
+  origin          ClientOrigin        @default(SITE_QUICK_FORM)
+  askYourQuestion String?             @db.VarChar
+  notes           Json                @default("[]") @db.Json
+  recentActions   Json                @default("[]") @db.Json
+  isRead          Boolean             @default(false) @db.Boolean
+  isInfoCompleted Boolean             @default(false) @db.Boolean
+  isFavorite      Boolean             @default(false) @db.Boolean
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @default(now()) @updatedAt
+
+  site Site @relation(fields: [siteId], references: [id])
+  paymentLogs PaymentLog[]
+
+  @@index([siteId])
+  @@index([name])
+  @@index([status])
+  @@index([isRead])
+  @@index([isFavorite])
+  @@index([createdAt])
+  @@map("clients")
+}
+
+model BusinessAreaDictionary {
+  name String @id @db.VarChar(255)
+
+  @@map("businessAreaDictionary")
+}
+
+model SubscriptionProduct {
+  id          String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String                    @db.VarChar(255)
+  description String?                   @db.VarChar
+  pricingPlan PricingPlan
+  provider    SubscriptionProvider      @default(SOLIDGATE)
+  externalId  String                    @db.VarChar
+  status      SubscriptionProductStatus @default(ACTIVE)
+
+  price       Int?                      @db.Integer
+  isBundle    Boolean                   @default(false)
+  forSwitch   Boolean                   @default(false)
+  advantages  Json                      @db.Json @default("{}")
+  limits      Json                      @db.Json @default("{}")
+  commission  Json                      @db.Json @default("{}")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  subscription Subscription[]
+  asBundle     Subscription[] @relation("subscriptionToBundleProduct")
+  payments     Payment[]
+
+  @@index([name])
+  @@index([externalId])
+  @@index([provider])
+  @@index([createdAt])
+  @@map("subscriptionProducts")
+}
+
+model Subscription {
+  id                    String             @id @default(uuid()) @db.Uuid
+  userId                String             @unique @db.Uuid
+  email                 String             @unique @db.VarChar
+  externalId            String             @unique @db.VarChar(255)
+  pricingPlan           PricingPlan
+  subscriptionProductId String             @db.Uuid
+  status                SubscriptionStatus
+  childSubscriptionId   String?            @db.Uuid
+  parentSubscriptionId  String?            @db.Uuid
+  amount                Int                @db.Integer
+  currency              String             @db.VarChar(3)
+  trial                 Boolean            @db.Boolean
+  internalTrial         Boolean            @db.Boolean @default(true)
+  trialPeriod           Int?               @db.Integer
+  trialAmount           Int?               @db.Integer
+  trialCurrency         String?            @db.VarChar(3)
+  reason                String?            @db.Text
+  lastAction            String?            @db.VarChar(255)
+  startedAt             DateTime           @default(now())
+  expiresAt             DateTime
+  canceledAt            DateTime?
+  renewedAt             DateTime?
+  failedAt              DateTime?
+  lastPaymentAt         DateTime?
+  nextPaymentAt         DateTime?
+
+  bundleId              String?            @db.Uuid
+  bundleExternalId      String?            @unique @db.VarChar(255)
+  bundleStatus          SubscriptionStatus?
+  bundleStartedAt       DateTime?
+  bundleExpiresAt       DateTime?
+  internalStatus        InternalSubscriptionStatus?
+
+  cancelReason          String?            @db.VarChar(255)
+  reasonText            String?            @db.Text
+  customTrialEnd        DateTime?
+  customTrialPeriod     Int?               @db.Integer
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())       @updatedAt
+
+  user                User                 @relation(fields: [userId], references: [id])
+  subscriptionProduct SubscriptionProduct  @relation(fields: [subscriptionProductId], references: [id])
+  bundleProduct       SubscriptionProduct? @relation("subscriptionToBundleProduct", fields: [bundleId], references: [id])
+  subscriptionLog     SubscriptionLog[]
+  payments            Payment[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("subscriptions")
+}
+
+model SubscriptionLog {
+  id             String                @id @default(uuid()) @db.Uuid
+  subscriptionId String?               @db.Uuid
+  externalId     String?               @db.VarChar(255)
+  provider       SubscriptionProvider?
+  type           String?               @db.VarChar(255)
+  data           Json                  @default("{}") @db.Json
+  error          String?               @db.Text
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @default(now()) @updatedAt
+
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  @@index([subscriptionId])
+  @@index([externalId])
+  @@index([createdAt])
+  @@map("subscriptionLogs")
+}
+
+model AIHubPrompt {
+  id String @id @default(uuid()) @db.Uuid
+
+  marketingType MarketingTypes
+  marketingName String         @db.VarChar(60)
+
+  promptTitle String @db.VarChar(60)
+  prompt      String @db.Text
+  settings    Json   @default("{}") @db.Json
+  description String @db.VarChar(60)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  aiHubUserPrompts AIHubUserPrompt[]
+
+  @@index([promptTitle])
+  @@index([marketingType])
+  @@index([marketingName])
+  @@map("aiHubPrompts")
+}
+
+model AIHubUserPrompt {
+  id String @id @default(uuid()) @db.Uuid
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @db.Uuid
+
+  prompt   AIHubPrompt @relation(fields: [promptId], references: [id])
+  promptId String      @db.Uuid
+
+  data       Json    @default("{}") @db.Json
+  isFavorite Boolean @default(false) @db.Boolean
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([userId])
+  @@index([promptId])
+  @@index([isFavorite])
+  @@map("aiHubUserPrompts")
+}
+
+model AIChatConversation {
+  id      String @id @default(uuid()) @db.Uuid
+  content Json   @default("{}") @db.Json
+  userId  String @unique @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("aiChatConversation")
+}
+
+model AIChatPrompt {
+  id     String @id @default(uuid()) @db.Uuid
+  prompt String @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("aiChatPrompts")
+}
+
+model InstantForm {
+  id                    String            @id @default(uuid()) @db.Uuid
+  facebookInstantFormId String            @db.VarChar(255)
+  name                  String            @default("") @db.VarChar(255)
+  contextTitle          String            @db.VarChar(255)
+  contextContent        Json              @default("{}") @db.Json
+  questionHeadline      String            @db.VarChar(255)
+  questions             Json              @default("{}") @db.Json
+  thankYouPage          Json              @default("{}") @db.Json
+  status                InstantFormStatus @default(ACTIVE)
+
+  facebookProfile   FacebookProfile? @relation(fields: [facebookProfileId], references: [id])
+  facebookProfileId String           @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("instantForms")
+}
+
+model Wallet {
+  id       String @id @default(uuid()) @db.Uuid
+  total    Float  @default(0) @db.DoublePrecision
+  reserved Float  @default(0) @db.DoublePrecision
+  actual   Float  @default(0) @db.DoublePrecision
+
+  user          User            @relation(fields: [userId], references: [id])
+  userId        String          @unique @db.Uuid
+  walletHistory WalletHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("wallets")
+}
+
+model WalletHistory {
+  id      String @id @default(uuid()) @db.Uuid
+  orderId String @unique
+  amount  Float  @default(0) @db.DoublePrecision
+
+  wallet   Wallet @relation(fields: [walletId], references: [id])
+  walletId String @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([orderId])
+  @@map("walletsHistories")
+}
+
+model Infrastructure {
+  name      String   @id @db.VarChar
+  data      Json     @db.JsonB
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("infrastructures")
+}
+
+model AdVideoTemplate {
+    // Main
+    id              String                  @id @default(uuid()) @db.Uuid // Id
+    name            String?                 @db.VarChar // Template name for UI
+    clearVideo      String?                 @db.VarChar // Template clear video for ad generation
+    showVideo       String?                 @db.VarChar // Template show case video
+    data            Json                    @default("{}") @db.Json // Template settings. Format: any[] (ffmpeg-fluent package -> .complexFilter options[])
+
+    // Creation
+    updatedAt       DateTime                @default(now()) @updatedAt // Updated date
+    createdAt       DateTime                @default(now()) // Created date
+    status          AdVideoTemplateStatus?  @default(ACTIVE) // Status
+    // Relations
+    adVideos        AdVideo[]
+
+    @@map("adVideoTemplates")
+}
+
+model AdVideo {
+    // Main
+    id          String        @id @default(uuid()) @db.Uuid // Id
+    name        String?       @db.VarChar // Optional name
+    url         String?       @db.VarChar // Url to video
+    data        Json?         @default("{}") @db.Json // Optional data object. Format {captions: string[]; images: string[]}; Added for posible video dublication feature
+    userId      String        @db.Uuid // Reference to user id
+    templateId  String        @db.Uuid // Reference to video template id
+
+    // Creation
+    createdAt   DateTime      @default(now()) // Created date
+    updatedAt   DateTime      @default(now()) @updatedAt // Updated date
+    status      AdVideoStatus @default(PENDING) // Status
+
+    // Relations
+    user               User             @relation(fields: [userId], references: [id]) // User table relation
+    adVideoTemplate    AdVideoTemplate  @relation(fields: [templateId], references: [id]) // Video template table relation
+
+    @@index([userId])
+    @@map("adVideos")
+}
+
+
+model Product {
+  id               String  @id @default(uuid()) @db.Uuid
+  siteId           String  @db.Uuid
+  title            String  @db.VarChar(300)
+  currencySymbol   String  @default("") @db.VarChar
+  description      String? @db.VarChar
+  shortDescription String  @db.VarChar(500)
+  price            Float   @db.DoublePrecision
+  oldPrice         Float?  @db.DoublePrecision
+  currency         String? @db.VarChar(3)
+  isArchived       Boolean @default(false) @db.Boolean
+  isCustomized     Boolean @default(false) @db.Boolean
+  url              String  @default("") @db.VarChar
+  quantity         Int?    @db.Integer
+
+  subCategoryId  String  @db.Uuid
+  actionButtonId String? @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  Order      Order[]
+  imageUrls  String[]           @db.VarChar
+  attributes ProductAttribute[]
+  creatives  Creative[]
+
+  site         Site                 @relation(fields: [siteId], references: [id])
+  subCategory  ProductSubCategory   @relation(fields: [subCategoryId], references: [id])
+  actionButton ProductActionButton? @relation(fields: [actionButtonId], references: [id])
+
+  @@index([siteId])
+  @@map("products")
+}
+
+model ProductCategory {
+  id    String  @id @default(uuid()) @db.Uuid
+  name  String  @db.VarChar
+  image String? @db.VarChar
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  subCategories ProductSubCategory[]
+
+  @@map("productCategories")
+}
+
+model ProductSubCategory {
+  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String  @db.VarChar
+  categoryId String  @db.Uuid
+  userId     String? @db.Uuid
+  image      String? @db.VarChar
+
+  Product Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  category ProductCategory @relation(fields: [categoryId], references: [id])
+
+  @@index([categoryId])
+  @@map("productSubCategories")
+}
+
+model Attribute {
+  id     String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name   String  @db.VarChar
+  userId String? @db.Uuid
+
+  user User? @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  productAttributes ProductAttribute[]
+  attributeValues   AttributeValue[]
+
+  @@index([userId])
+  @@map("attributes")
+}
+
+model AttributeValue {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  attributeId String  @db.Uuid
+  value       String  @db.VarChar
+  userId      String? @db.Uuid
+
+  user User? @relation(fields: [userId], references: [id])
+
+  attribute        Attribute          @relation(fields: [attributeId], references: [id])
+  ProductAttribute ProductAttribute[]
+
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @default(now()) @updatedAt
+  ProductAttributeValues ProductAttributeValues[]
+
+  @@index([attributeId])
+  @@map("attributeValues")
+}
+
+model ProductAttribute {
+  id          String @id @default(uuid()) @db.Uuid
+  productId   String @db.Uuid
+  attributeId String @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  product                Product                  @relation(fields: [productId], references: [id])
+  attribute              Attribute                @relation(fields: [attributeId], references: [id])
+  ProductAttributeValues ProductAttributeValues[]
+  AttributeValue         AttributeValue?          @relation(fields: [attributeValueId], references: [id])
+  attributeValueId       String?                  @db.Uuid
+
+  @@map("productAttributes")
+}
+
+model ProductAttributeValues {
+  productAttributeId String @db.Uuid
+  attributeValueId   String @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  productAttribute ProductAttribute @relation(fields: [productAttributeId], references: [id])
+  attributeValue   AttributeValue   @relation(fields: [attributeValueId], references: [id])
+
+  @@id([productAttributeId, attributeValueId])
+  @@map("productAttributeValues")
+}
+
+model ProductActionButton {
+  id     String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  label  String  @db.VarChar(100)
+  userId String? @db.Uuid
+
+  user User? @relation(fields: [userId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  Product   Product[]
+
+  @@index([userId])
+  @@map("productActionButtons")
+}
+
+model Achievement {
+  id           String   @db.VarChar(200)
+  value        Int      @db.Integer @default(1)
+  title        String   @db.VarChar(200)
+  description  String
+  isActive     Boolean  @default(true) @db.Boolean
+  redirectPath String?  @db.VarChar(300)
+  order        Int      @default(autoincrement()) @db.SmallInt
+  version      Int?     @default(1) @db.SmallInt
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+
+  @@id([id, value])
+  @@map("achievements")
+}
+
+model UserAchievements {
+  userId        String   @db.Uuid
+  achievementId String   @db.VarChar(200)
+  value         Int      @db.Integer
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  user          User        @relation(fields: [userId], references: [id])
+
+  @@id([userId, achievementId])
+  @@map("userAchievements")
+}
+
+model Admin {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email     String  @unique @db.VarChar(200)
+  name      String  @db.VarChar(50)
+  role      String  @db.VarChar(50)
+  photo     String? @db.VarChar
+  creatorId String  @db.Uuid
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  password  String   @db.VarChar
+
+  creatorOfAdmin Admin   @relation("CreatorAdmin", fields: [creatorId], references: [id])
+  createdAdmins  Admin[] @relation("CreatorAdmin")
+
+  relatedNotifications Notification[]
+  sentNotifications    UserNotification[]
+  notificationsHistory NotificationsHistory[]
+  adminLogs            AdminLog[]
+
+  @@map("admins")
+}
+
+model Notification {
+  id            String   @id @db.VarChar(150)
+  isActive      Boolean  @default(true)
+  adminId       String?  @db.Uuid
+  title         String   @db.VarChar(255)
+  message       String   @db.VarChar
+  emailTemplate String?  @db.Text
+  deeplink      String?  @db.VarChar
+  deeplinkText  String?  @db.VarChar
+  triggerType   String?  @db.VarChar(50)
+  trigger       Json     @default("{}") @db.Json
+  sendVia       Json     @default("[]") @db.Json
+  createdAt     DateTime @default(now())
+
+  admin       Admin?   @relation(fields: [adminId], references: [id])
+
+  userNotifications UserNotification[]
+  notificationsHistory NotificationsHistory[]
+
+  @@map("notifications")
+}
+
+model UserNotification {
+  id             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  notificationId String?  @db.VarChar(150)
+  userId         String  @db.Uuid
+  isRead         Boolean @default(false)
+  adminId        String  @db.Uuid
+
+  title        String   @db.VarChar(255)
+  message      String   @db.VarChar
+  deeplink     String?  @db.VarChar
+  deeplinkText String?  @db.VarChar
+  isSent       Boolean  @default(true)
+  sendAt       DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  admin        Admin         @relation(fields: [adminId], references: [id])
+  user         User          @relation(fields: [userId], references: [id])
+  notification Notification? @relation(fields: [notificationId], references: [id])
+
+  @@map("userNotifications")
+}
+
+model NotificationSettings {
+  userId            String       @id @db.Uuid
+  isEmailEnabled    Boolean      @default(true)
+  isPushEnabled     Boolean      @default(true)
+  isInboxEnabled    Boolean      @default(true)
+  isWhatsAppEnabled Boolean      @default(true)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("notificationSettings")
+}
+
+model NotificationsHistory {
+    id             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    userId         String  @db.Uuid
+    adminId        String  @db.Uuid
+    notificationId String? @db.VarChar(150)
+    sentVia        String  @db.VarChar(50)
+
+    title        String   @db.VarChar(255)
+    message      String   @db.VarChar
+    deeplink     String?  @db.VarChar
+    deeplinkText String?  @db.VarChar
+    createdAt    DateTime @default(now())
+
+    isSent       Boolean   @default(true)
+    sendAt       DateTime? @default(now())
+    isDelivered  Boolean?
+    deliveredAt  DateTime?
+    data         Json?     @db.Json
+    error        Json?     @db.Json
+    externalId   String?   @db.VarChar
+
+    admin        Admin         @relation(fields: [adminId], references: [id])
+    user         User          @relation(fields: [userId], references: [id])
+    notification Notification? @relation(fields: [notificationId], references: [id])
+
+    @@map("notificationsHistory")
+}
+
+model Course {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @db.VarChar
+  description  String   @db.VarChar
+  previewImage String   @db.VarChar
+  lessons      Lesson[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("courses")
+}
+
+model Lesson {
+  id             String          @id @default(uuid()) @db.Uuid
+  courseId       String          @db.Uuid
+  index          Int             @db.Integer @default(0)
+  videoLessons   VideoLesson[]
+  articleLessons ArticleLesson[]
+  quizLesson     QuizLesson?
+
+  course Course @relation(fields: [courseId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("lessons")
+}
+
+model VideoLesson {
+  id                   String                @id @default(uuid()) @db.Uuid
+  lessonId             String                @db.Uuid
+  name                 String                @db.VarChar
+  url                  String                @db.VarChar
+  previewImage         String                @db.VarChar
+  duration             String                @db.VarChar
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  userVideoLessons UserVideoLesson[]
+  lesson Lesson @relation(fields: [lessonId], references: [id])
+
+  @@index([name])
+  @@map("videoLessons")
+}
+
+model ArticleLesson {
+  id                   String                @id @default(uuid()) @db.Uuid
+  lessonId             String                @db.Uuid
+  name                 String                @db.VarChar
+  schema               Json                  @db.Json
+  previewImage         String                @db.VarChar
+  readTime             Int                   @db.Integer
+
+  lesson Lesson @relation(fields: [lessonId], references: [id])
+  userArticleLessons UserArticleLesson[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([name])
+  @@map("articleLessons")
+}
+
+model QuizLesson {
+  id                   String                @id @default(uuid()) @db.Uuid
+  lessonId             String                @unique @db.Uuid
+  name                 String                @db.VarChar
+  data                 Json                  @db.Json
+  countQuestions       Int                  @db.Integer
+
+  userQuizLessons UserQuizLesson[]
+  lesson Lesson @relation(fields: [lessonId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("quizLessons")
+}
+
+model UserVideoLesson {
+  id             String       @id @default(uuid()) @db.Uuid
+  userId         String       @db.Uuid
+  videoLessonId  String       @db.Uuid
+  isCompleted    Boolean
+  isSaved        Boolean
+
+  user        User        @relation(fields: [userId], references: [id])
+  videoLesson VideoLesson @relation(fields: [videoLessonId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("userVideoLessons")
+}
+
+model UserArticleLesson {
+  id               String        @id @default(uuid()) @db.Uuid
+  userId           String        @db.Uuid
+  articleLessonId  String        @db.Uuid
+  isCompleted      Boolean
+  isSaved          Boolean
+
+  user         User         @relation(fields: [userId], references: [id])
+  articleLesson ArticleLesson @relation(fields: [articleLessonId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("userArticleLessons")
+}
+
+model UserQuizLesson {
+  id           String     @id @default(uuid()) @db.Uuid
+  userId       String     @db.Uuid
+  quizLessonId String     @db.Uuid
+  isCompleted  Boolean
+  isSaved      Boolean
+  failedCount  Int        @default(0)
+  successCount Int        @default(0)
+
+  user      User      @relation(fields: [userId], references: [id])
+  quizLesson QuizLesson @relation(fields: [quizLessonId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("userQuizLessons")
+}
+
+model Payment {
+  id                        String   @id @default(uuid()) @db.Uuid
+  amount                    Float    @db.DoublePrecision
+  currency                  String   @db.VarChar(3)
+  externalId                String?  @db.VarChar(255)
+  type                      PaymentAnalyticsType?
+  status                    PaymentAnalyticsStatus?
+  externalStatus            String?  @db.VarChar(255)
+  subscriptionId            String?  @db.Uuid
+  externalSubscriptionId    String?  @db.VarChar
+  subscriptionProductId     String?  @db.Uuid
+  userId                    String?  @db.Uuid
+  email                     String?  @db.VarChar
+  cardToken                 String?  @db.VarChar
+  verifyUrl                 String?  @db.VarChar
+  userCreatedAt             DateTime?
+  provider                  PaymentAnalyticsProvider?
+  error                     String?  @db.Text
+  description               String?  @db.Text
+  data                      Json?    @db.Json
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @default(now()) @updatedAt
+
+  user                User?         @relation(fields: [userId], references: [id])
+  subscription        Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionProduct SubscriptionProduct? @relation(fields: [subscriptionProductId], references: [id])
+
+  @@map("payments")
+}
+
+model FaqTopic {
+  id           String     @id @default(uuid()) @db.Uuid
+  title        String     @db.VarChar
+  iconUrl      String     @db.VarChar
+  faq          Faq[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("faqTopics")
+}
+
+model Faq {
+  id           String     @id @default(uuid()) @db.Uuid
+  question     String     @db.VarChar
+  answer       String     @db.VarChar
+  topicId      String     @db.Uuid
+
+  topic        FaqTopic   @relation(fields: [topicId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("faq")
+}
+
+
+model PushToken {
+  userId    String   @db.Uuid
+  deviceId  String   @db.VarChar
+  token     String   @db.VarChar @unique
+
+  isActive  Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@id([userId, deviceId])
+  @@map("pushTokens")
+}
+
+model FacebookApiError {
+  id           String     @id @default(uuid()) @db.Uuid
+  method       String     @db.VarChar
+  error        String     @db.VarChar
+  headers      String     @db.VarChar
+  body         String     @default("") @db.VarChar
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt
+  @@map("facebookApiErrors")
+}
+
+model FacebookAdQueue {
+  id                  String     @id @default(uuid()) @db.Uuid
+  body                String     @db.VarChar
+  userId              String     @db.Uuid
+  facebookProfileId   String     @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  @@map("facebookAdQueues")
+}
+
+model Reward {
+  id              String                    @id @default(uuid()) @db.Uuid
+  referralId      String?                   @db.Uuid
+  referrerId      String                    @db.Uuid
+  rewardBonus     Int                       @db.Integer
+  orderId         String?                   @db.VarChar
+  link            String?                   @db.VarChar
+  status          RewardStatus              @default(PENDING)
+  provider        RewardProvider            @default(TREMENDOUS)
+
+  referral        User?                     @relation(fields: [referralId], references: [id])
+
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @default(now()) @updatedAt
+
+  @@map("rewards")
+}
+
+model AdminLog {
+  id              String                    @id @default(uuid()) @db.Uuid
+  userId          String                    @db.Uuid
+  adminId         String                    @db.Uuid
+  type            String                    @db.VarChar
+  data            Json?                     @db.JsonB
+
+  user            User                      @relation(fields: [userId], references: [id])
+  admin           Admin                     @relation(fields: [adminId], references: [id])
+
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @default(now()) @updatedAt
+
+  @@map("adminLogs")
+}
+
+model AiScraperResult {
+  id                      String                    @id @default(uuid()) @db.Uuid
+  userId                  String                    @db.Uuid
+  url                     String                    @db.VarChar
+  companyName             String?                   @db.VarChar
+  companyDescription      String?                   @db.VarChar
+  businessArea            String?                   @db.VarChar
+  location                String?                   @db.VarChar
+  direction               String?                   @db.VarChar
+  specialOffer            String?                   @db.VarChar
+  provider                ScraperProvider           @default(APIFY)
+
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @default(now()) @updatedAt
+
+  @@map("aiScraperResults")
+}
+
+model DeletedUser {
+  id                      String                    @id @default(uuid()) @db.Uuid
+  userId                  String                    @db.Uuid
+  email                   String                    @db.VarChar
+  name                    String                    @db.VarChar
+  phone                   String?                   @db.VarChar(20)
+
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @default(now()) @updatedAt
+
+  @@map("deletedUsers")
+}
+
+
+model SiteUniqueness {
+    id                          String      @id @default(uuid()) @db.Uuid
+    siteId                      String      @db.Uuid
+    isCustomTitle               Boolean     @default(false)
+    isCustomDescription         Boolean     @default(false)
+    isCustomBackgroundImage     Boolean     @default(false)
+    isCustomAbout               Boolean     @default(false)
+    isCustomBenifits            Boolean     @default(false)
+    isCustomPhotos              Boolean     @default(false)
+    isCustomSteps               Boolean     @default(false)
+    isCustomQuestions           Boolean     @default(false)
+    isCustomTeam                Boolean     @default(false)
+
+    createdAt                   DateTime    @default(now())
+    updatedAt                   DateTime    @default(now()) @updatedAt
+
+  @@map("siteUniqueness")
+}
+
+model EmailStatistic {
+    id                          String           @id @default(uuid()) @db.Uuid
+    userId                      String           @db.Uuid
+    event                       String           @db.VarChar
+    messageId                   String           @db.VarChar
+    notificationId              String           @db.VarChar
+    provider                    EmailProvider    @default(SENDGRID)
+
+    createdAt                   DateTime    @default(now())
+    updatedAt                   DateTime    @default(now()) @updatedAt
+
+  @@map("emailStatistics")
+}
+
+model UserUtmParameter {
+    userId          String           @id @db.Uuid
+    utmSource       String           @db.VarChar
+    utmMedium       String           @db.VarChar
+    utmCampaign     String           @db.VarChar
+    utmTerm         String           @db.VarChar
+    utmContent      String           @db.VarChar
+    url             String           @db.VarChar
+
+    createdAt       DateTime    @default(now())
+    updatedAt       DateTime    @default(now()) @updatedAt
+
+    user User       @relation(fields: [userId], references: [id])
+
+    @@map("userUtmParameters")
+}
+
+model UserSession {
+    id              String          @id @default(uuid()) @db.Uuid
+    userId          String          @db.Uuid
+    loginType       String          @db.VarChar
+    device          String          @db.VarChar
+    deviceId        String          @db.VarChar
+    ip              String          @db.VarChar
+
+    createdAt       DateTime        @default(now())
+    updatedAt       DateTime        @default(now()) @updatedAt
+
+    @@map("userSessions")
+}
+
+model Waitlist {
+    id          String     @id @default(uuid()) @db.Uuid
+    userId      String     @db.Uuid
+    featureName String     @db.VarChar
+
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @default(now()) @updatedAt
+
+    @@map("waitlist")
+}
+
+model UserLimits {
+    id                  String  @id @default(uuid()) @db.Uuid
+    userId              String  @db.Uuid @unique
+
+    createdCreatives    Int     @default(0) @db.Integer
+    aiCreatedCreatives  Int     @default(0) @db.Integer
+    builtVideos         Int     @default(0) @db.Integer
+    aiBuiltVideos       Int     @default(0) @db.Integer
+    adCampaignsStarted  Int     @default(0) @db.Integer
+
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @default(now()) @updatedAt
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@map("userLimits")
+}
+
+model CityDictionary {
+    id         String  @id @default(uuid()) @db.Uuid
+    name       String  @db.VarChar
+    state      String? @db.VarChar
+    order      Int     @db.Integer
+
+    @@map("cityDictionary")
+}
+
+model IndustryDictionary {
+    name       String  @id @db.VarChar
+    imgUrl     String? @db.VarChar
+    order      Int     @db.Integer
+
+    @@map("industryDictionary")
+}
